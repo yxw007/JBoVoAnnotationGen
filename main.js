@@ -20,11 +20,11 @@ function autoGen(content) {
 	}
 
 	function convertImport(content) {
-		let res = content.replace(/(public class)/gmi, (match) => {
-			const importCode = "import com.alibaba.fastjson.annotation.JSONField;" +
-				+ "import com.fasterxml.jackson.annotation.JsonProperty;"
-				+ "import io.swagger.annotations.ApiModelProperty;"
-				+ `import lombok.Data;\n\n@Data\n${match}`
+		let res = content.replace(/(@Data\s+)?(public class)/gmi, (match, p1, p2) => {
+			const importCode = "import com.alibaba.fastjson.annotation.JSONField;\n"
+				+ "import com.fasterxml.jackson.annotation.JsonProperty;\n"
+				+ "import io.swagger.annotations.ApiModelProperty;\n"
+				+ `import lombok.Data;\n\n@Data\n${p2}`
 			return importCode;
 		});
 		return res;
