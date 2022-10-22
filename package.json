@@ -1,0 +1,25 @@
+{
+	"name": "bean-transfrom",
+	"version": "1.0.0",
+	"description": "> 避免 BO、VO 对象定义变量，需要重复定义多次的情况，避免重复工作利用此工具自动生成注解",
+	"main": "main.js",
+	"bin": {
+		"be": "bin/be"
+	},
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/yxw007/JBoVoAnnotationGen.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/yxw007/JBoVoAnnotationGen/issues"
+	},
+	"homepage": "https://github.com/yxw007/JBoVoAnnotationGen#readme",
+	"devDependencies": {
+		"commander": "^9.4.1",
+		"inquirer": "^9.1.4"
+	}
+}

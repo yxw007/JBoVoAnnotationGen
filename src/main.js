@@ -1,6 +1,5 @@
-const fs = require("fs");
-const path = require("path");
-let content = fs.readFileSync(path.join(__dirname, "./res/source.java"), "utf8");
+import fs from "fs";
+import path from "path";
 
 function autoGen(content) {
 
@@ -57,8 +56,30 @@ function autoGen(content) {
 	return convert2;
 }
 
-let result = autoGen(content);
-let targetPath = path.join(__dirname, "./dist/target.java");
-fs.writeFileSync(targetPath, result);
+async function transform(filePath) {
+	return new Promise((resolve) => {
+		let content = fs.readFileSync(filePath, "utf8");
+		//包含：JSONField or JsonProperty or ApiModelProperty 就说明已转换过
+		if (/JSONField|JsonProperty|ApiModelProperty/mg.test(content)) {
+			let result = autoGen(content);
+			fs.writeFileSync(filePath, result);
+		}
+		resolve();
+	})
+}
 
-console.log("生成成功：", targetPath);
+export default async function (fileOrDirPath) {
+	let state = fs.statSync(fileOrDirPath);
+	if (state.isDirectory()) {
+		let fileNames = fs.readdirSync(fileOrDirPath);
+		console.log("wait transfrom file names:", fileNames);
+
+		for (const fileName of fileNames) {
+			await transform(path.resolve(fileOrDirPath, fileName));
+		}
+	} else {
+		await transform(path.resolve(fileOrDirPath));
+	}
+
+	console.log("transfrom is complete !");
+}
