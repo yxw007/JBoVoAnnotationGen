@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-function autoGen(content) {
+function autoGen(content, isExistFileTransform) {
 
 	function formatFieldName(names) {
 		let ret = "";
@@ -16,6 +16,36 @@ function autoGen(content) {
 			}
 		}
 		return ret;
+	}
+
+	/**
+	 * 驼峰命名转下划线命名
+	 * @param {*} str 
+	 * @returns 
+	 */
+	function camelToUnderFieldName(str) {
+		if (!str) {
+			return str
+		}
+
+		const regex = /[A-Z]/gm;
+		let m, preIndex = 0;
+		let result = [];
+		while ((m = regex.exec(str)) !== null) {
+			if (m.index === regex.lastIndex) {
+				regex.lastIndex++;
+			}
+			result.push(str.substring(preIndex, m.index));
+			preIndex = m.index;
+		}
+
+		//没有到最后则截取最后一段
+		if (preIndex != str.length - 1) {
+			let lastContent = str.substring(preIndex);
+			result.push(lastContent);
+		}
+
+		return result.join("_").toLocaleLowerCase();
 	}
 
 	function convertImport(content) {
@@ -38,11 +68,24 @@ function autoGen(content) {
 
 			let variableName = arr.pop().slice(0, -1);
 
-			let fieldName = formatFieldName(variableName.split("_"));
-			arr.push(fieldName);
+			let fieldName = "";
+			let res = "";
+			if (variableName.includes("_")) {
+				fieldName = formatFieldName(variableName.split("_"));
+				arr.push(fieldName);
+
+				fieldName = variableName;
+			} else {
+				fieldName = camelToUnderFieldName(variableName);
+				arr.push(variableName);
+			}
 
 			let fragment = arr.join(" ");
-			let res = `    @ApiModelProperty("")\n    @JsonProperty("${variableName}")\n    @JSONField(name="${variableName}")\n    ${fragment};\n`
+			if (isExistFileTransform) {
+				res = `    @JsonProperty("${fieldName}")\n    @JSONField(name="${fieldName}")\n    ${fragment};\n`
+			} else {
+				res = `    @ApiModelProperty("")\n    @JsonProperty("${fieldName}")\n    @JSONField(name="${fieldName}")\n    ${fragment};\n`
+			}
 
 			return res;
 		})
@@ -56,29 +99,28 @@ function autoGen(content) {
 	return convert2;
 }
 
-async function transform(filePath) {
+async function transform(filePath, isExistFileTransform) {
 	return new Promise((resolve) => {
 		let content = fs.readFileSync(filePath, "utf8");
 		//包含：JSONField or JsonProperty or ApiModelProperty 就说明已转换过
-		if (!/JSONField|JsonProperty|ApiModelProperty/mg.test(content)) {
-			let result = autoGen(content);
-			fs.writeFileSync(filePath, result);
-		}
+		// if (!/JSONField|JsonProperty|ApiModelProperty/mg.test(content)) {
+		let result = autoGen(content, isExistFileTransform);
+		fs.writeFileSync(filePath, result);
+		// }
 		resolve();
 	})
 }
 
-export default async function (fileOrDirPath) {
+export default async function (fileOrDirPath, isExistFileTransform) {
 	let state = fs.statSync(fileOrDirPath);
 	if (state.isDirectory()) {
 		let fileNames = fs.readdirSync(fileOrDirPath);
 		console.log("wait transfrom file names:", fileNames);
-
 		for (const fileName of fileNames) {
-			await transform(path.resolve(fileOrDirPath, fileName));
+			await transform(path.resolve(fileOrDirPath, fileName), isExistFileTransform);
 		}
 	} else {
-		await transform(path.resolve(fileOrDirPath));
+		await transform(path.resolve(fileOrDirPath), isExistFileTransform);
 	}
 
 	console.log("transfrom is complete !");
