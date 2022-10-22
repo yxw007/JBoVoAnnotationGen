@@ -1,6 +1,6 @@
 {
 	"name": "bean-transfrom",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "> 避免 BO、VO 对象定义变量，需要重复定义多次的情况，避免重复工作利用此工具自动生成注解",
 	"main": "main.js",
 	"bin": {

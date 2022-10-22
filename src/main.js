@@ -60,7 +60,7 @@ async function transform(filePath) {
 	return new Promise((resolve) => {
 		let content = fs.readFileSync(filePath, "utf8");
 		//包含：JSONField or JsonProperty or ApiModelProperty 就说明已转换过
-		if (/JSONField|JsonProperty|ApiModelProperty/mg.test(content)) {
+		if (!/JSONField|JsonProperty|ApiModelProperty/mg.test(content)) {
 			let result = autoGen(content);
 			fs.writeFileSync(filePath, result);
 		}
